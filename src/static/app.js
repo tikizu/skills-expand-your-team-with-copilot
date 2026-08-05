@@ -498,6 +498,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Format the schedule using the new helper function
     const formattedSchedule = formatSchedule(details);
+    const shareText = encodeURIComponent(
+      `Check out the ${name} activity at Mergington High School! ${formattedSchedule}.`
+    );
+    const shareUrl = encodeURIComponent(window.location.href);
 
     // Create activity tag
     const tagHtml = `
@@ -552,6 +556,30 @@ document.addEventListener("DOMContentLoaded", () => {
             .join("")}
         </ul>
       </div>
+      <div class="share-actions">
+        <span class="share-label">Share with friends:</span>
+        <div class="share-buttons">
+          <a
+            class="share-button share-email"
+            href="mailto:?subject=${encodeURIComponent(
+              `Mergington activity: ${name}`
+            )}&body=${shareText}%20${shareUrl}"
+          >
+            Email
+          </a>
+          <a
+            class="share-button share-whatsapp"
+            href="https://wa.me/?text=${shareText}%20${shareUrl}"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            WhatsApp
+          </a>
+          <button class="share-button share-copy" data-activity="${name}" type="button">
+            Copy Link
+          </button>
+        </div>
+      </div>
       <div class="activity-card-actions">
         ${
           currentUser
@@ -586,6 +614,30 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       }
     }
+
+    const copyButton = activityCard.querySelector(".share-copy");
+    copyButton.addEventListener("click", async () => {
+      const shareMessage = `Check out the ${name} activity at Mergington High School! ${formattedSchedule}. ${window.location.href}`;
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(shareMessage);
+        } else {
+          const fallbackInput = document.createElement("textarea");
+          fallbackInput.value = shareMessage;
+          fallbackInput.setAttribute("readonly", "");
+          fallbackInput.style.position = "absolute";
+          fallbackInput.style.left = "-9999px";
+          document.body.appendChild(fallbackInput);
+          fallbackInput.select();
+          document.execCommand("copy");
+          document.body.removeChild(fallbackInput);
+        }
+        showMessage(`Share link copied for ${name}.`, "success");
+      } catch (error) {
+        console.error("Unable to copy share link:", error);
+        showMessage("Could not copy the share link. Please try again.", "error");
+      }
+    });
 
     activitiesList.appendChild(activityCard);
   }
